@@ -1,7 +1,5 @@
 package GameOfLife;
 
-import java.util.Arrays;
-
 public class Ruleset {
   private boolean[] begin;
   private boolean[] stay;

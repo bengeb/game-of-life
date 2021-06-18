@@ -18,6 +18,12 @@ public class GameOfLife {
     }
   }
 
+  // Print the proper command-line input syntax for this program
+  static void printUsage() {
+    System.out.println("Usage: GameOfLife input.txt [type]");
+    System.out.println("Alternatively, 'GameOfLife help' lists all rule variants");
+  }
+
   // Read the contents of the given file and put them into a char array
   // filename: The name of the file to read from
   // return: The contents of the file
@@ -84,14 +90,19 @@ public class GameOfLife {
   // Run through one cycle of the game
   // field: The playing field
   // rule: The Ruleset used to decide what each cell should do
-  static void cycle(char[][] field, Ruleset rule) {
+  // return: Whether the field changed at all this cycle
+  static boolean cycle(char[][] field, Ruleset rule) {
+    boolean change = false;
+
     for (int row = 0; row < field.length; row++) {
       for (int col = 0; col < field[0].length; col++) {
         if (field[row][col] == EMPTY && rule.begin(countNeighbors(field, row, col))) {
           field[row][col] = BIRTH;
+          change = true;
         }
         if (field[row][col] == ALIVE && !rule.stay(countNeighbors(field, row, col))) {
           field[row][col] = DEATH;
+          change = true;
         }
       }
     }
@@ -105,14 +116,26 @@ public class GameOfLife {
         }
       }
     }
+
+    return change;
+  }
+
+  // Print the grid of lifeforms in its current state
+  // field: The playing field
+  static void printField(char[][] field) {
+    for (int i = 0; i < field.length; i++) {
+      for (int j = 0; j < field[0].length; j++) {
+        System.out.print(field[i][j]);
+      }
+      System.out.println();
+    }
   }
 
   // Set up the playing field and loop over it with the cycle() function
   // args: The command line arguments
   public static void main(String args[]) {
     if (args.length < 1 || args.length > 3) {
-      System.out.println("Usage: GameOfLife input.txt [type]");
-      System.out.println("Alternatively, 'GameOfLife help' lists all rule variants");
+      printUsage();
       return;
     }
 
@@ -121,33 +144,30 @@ public class GameOfLife {
       return;
     }
 
-    int tempIndex = 0;
+    // Set the Game of Life rules to use according to command line input
+    int ruleIndex = 0;
     if (args.length == 2) {
-      tempIndex = java.util.Arrays.asList(FORMS).indexOf(args[1].toUpperCase());
-      if (tempIndex < 0) {
-        tempIndex = 0;
+      ruleIndex = java.util.Arrays.asList(FORMS).indexOf(args[1].toUpperCase());
+      if (ruleIndex < 0) {
+        ruleIndex = 0;
       }
     }
-    Ruleset rule = makeRuleset(tempIndex);
+    Ruleset rule = makeRuleset(ruleIndex);
 
     char[][] field = read(args[0]);
     if (field == null) {
       return;
     }
 
-    for (int i = 0; i < field.length; i++) {
-      for (int j = 0; j < field[0].length; j++) {
-        System.out.print(field[i][j]);
-      }
-      System.out.println();
+    System.out.println(DESCRIPTIONS[ruleIndex] + " (stay " + STAY[ruleIndex] + ", begin " + BEGIN[ruleIndex] + ")");
+    int height = field.length;
+    printField(field);
+    while (cycle(field, rule)) {
+      try {Thread.sleep(100);} catch(InterruptedException err){}
+      // Use an ANSI control sequence to position the cursor
+      System.out.print(String.format("\033[%dA", height));
+      printField(field);
     }
-    System.out.println();
-    cycle(field, rule);
-    for (int i = 0; i < field.length; i++) {
-      for (int j = 0; j < field[0].length; j++) {
-        System.out.print(field[i][j]);
-      }
-      System.out.println();
-    }
+    System.out.println("System has reached equilibrium.");
   }
 }
