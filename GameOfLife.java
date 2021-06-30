@@ -2,10 +2,10 @@ package GameOfLife;
 import java.util.*;
 import java.io.*;
 public class GameOfLife {
-  static final String[] FORMS = {"GOL", "HLIF", "ASIM", "2X2"};
-  static final String[] DESCRIPTIONS = {"Game of Life (default)", "High Life", "Assimilation", "2x2"};
-  static final String[] STAY = {"23", "23", "4567", "125"};
-  static final String[] BEGIN = {"3", "36", "345", "36"};
+  static final String[] FORMS = {"GOL", "HLIF", "ASIM", "2X2", "DANI", "AMOE", "MOVE", "PGOL", "DMOE", "34", "LLIF", "STAN", "SEED", "MAZE", "COAG", "WALL", "GNAR", "REPL", "MYST", "CORL"};
+  static final String[] DESCRIPTIONS = {"Game of Life (default)", "High Life", "Assimilation", "2x2", "Day and Night", "Amoeba", "Move", "Pseudo Life", "Diamoeba", "3-4 Life", "Long Life", "Stains", "Seeds", "Maze", "Coagulations", "Walled Cities", "Gnarl", "Replicator", "Mystery", "Coral"};
+  static final String[] STAY = {"23", "23", "4567", "125", "34678", "1358", "245", "238", "5678", "34", "5", "235678", "", "12345", "235678", "2345", "1", "1357", "05678", "45678"};
+  static final String[] BEGIN = {"3", "36", "345", "36", "3678", "357", "368", "357", "35678", "34", "345", "3678", "2", "3", "378", "45678", "1", "1357", "3458", "3"};
   static final char EMPTY = '.';
   static final char ALIVE = 'o';
   static final char BIRTH = 'B';
@@ -20,8 +20,12 @@ public class GameOfLife {
 
   // Print the proper command-line input syntax for this program
   static void printUsage() {
-    System.out.println("Usage: GameOfLife input.txt [type]");
-    System.out.println("Alternatively, 'GameOfLife help' lists all rule variants");
+    System.out.println("Usage: GameOfLife input.txt [type] [speed]");
+    System.out.println("input.txt is the file to read the initial state of the playing field from.");
+    System.out.println("[type] is the abbreviated rule variation to use; GOL by default.");
+    System.out.println("[speed] is, if positive, the number of milliseconds to wait between cycles; 200 by default.");
+    System.out.println("If [speed] is negative, its absolute value represents the number of cycles to compute between each console print.");
+    System.out.println("Alternatively, 'GameOfLife help' lists all rule variants.");
   }
 
   // Read the contents of the given file and put them into a char array
@@ -122,7 +126,9 @@ public class GameOfLife {
 
   // Print the grid of lifeforms in its current state
   // field: The playing field
-  static void printField(char[][] field) {
+  // cycle: The number of cycles elapsed so far
+  static void printField(char[][] field, int cycle) {
+    System.out.println("Cycle " + cycle);
     for (int i = 0; i < field.length; i++) {
       for (int j = 0; j < field[0].length; j++) {
         System.out.print(field[i][j]);
@@ -146,7 +152,7 @@ public class GameOfLife {
 
     // Set the Game of Life rules to use according to command line input
     int ruleIndex = 0;
-    if (args.length == 2) {
+    if (args.length > 1) {
       ruleIndex = java.util.Arrays.asList(FORMS).indexOf(args[1].toUpperCase());
       if (ruleIndex < 0) {
         ruleIndex = 0;
@@ -159,15 +165,29 @@ public class GameOfLife {
       return;
     }
 
-    System.out.println(DESCRIPTIONS[ruleIndex] + " (stay " + STAY[ruleIndex] + ", begin " + BEGIN[ruleIndex] + ")");
-    int height = field.length;
-    printField(field);
-    while (cycle(field, rule)) {
-      try {Thread.sleep(100);} catch(InterruptedException err){}
-      // Use an ANSI control sequence to position the cursor
-      System.out.print(String.format("\033[%dA", height));
-      printField(field);
+    int speed = 200;
+    int turbo = 1;
+    if (args.length > 2 && Integer.parseInt(args[2]) >= 0) {
+      speed = Integer.parseInt(args[2]);
+    } else if (args.length > 2 && Integer.parseInt(args[2]) < 0) {
+      speed = 0;
+      turbo = Math.abs(Integer.parseInt(args[2]));
     }
+
+    System.out.println("--- " + DESCRIPTIONS[ruleIndex] + " (stay " + STAY[ruleIndex] + ", begin " + BEGIN[ruleIndex] + ") ---");
+    int cycle = 0;
+    printField(field, cycle);
+    while (cycle(field, rule)) {
+      cycle++;
+      try {Thread.sleep(speed);} catch(InterruptedException err){}
+      if (cycle % turbo == 0) {
+        // Use an ANSI control sequence to position the cursor
+        System.out.print(String.format("\033[%dA", field.length + 1));
+        printField(field, cycle);
+      }
+    }
+    System.out.print(String.format("\033[%dA", field.length + 1));
+    printField(field, cycle);
     System.out.println("System has reached equilibrium.");
   }
 }
