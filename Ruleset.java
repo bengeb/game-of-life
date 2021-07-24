@@ -1,5 +1,6 @@
 package GameOfLife;
 
+// Represents a Game of Life rule variation
 public class Ruleset {
   private boolean[] begin;
   private boolean[] stay;

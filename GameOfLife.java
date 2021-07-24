@@ -1,6 +1,8 @@
 package GameOfLife;
 import java.util.*;
 import java.io.*;
+
+// Runs a Game of Life simulation following the specified rule variation
 public class GameOfLife {
   static final String[] FORMS = {"GOL", "HLIF", "ASIM", "2X2", "DANI", "AMOE", "MOVE", "PGOL", "DMOE", "34", "LLIF", "STAN", "SEED", "MAZE", "COAG", "WALL", "GNAR", "REPL", "MYST", "CORL"};
   static final String[] DESCRIPTIONS = {"Game of Life (default)", "High Life", "Assimilation", "2x2", "Day and Night", "Amoeba", "Move", "Pseudo Life", "Diamoeba", "3-4 Life", "Long Life", "Stains", "Seeds", "Maze", "Coagulations", "Walled Cities", "Gnarl", "Replicator", "Mystery", "Coral"};
@@ -145,7 +147,7 @@ public class GameOfLife {
       return;
     }
 
-    if (args.length > 1 && args[1].toLowerCase().equals("help")) {
+    if (args.length > 0 && args[0].toLowerCase().equals("help")) {
       printHelp();
       return;
     }
@@ -155,7 +157,8 @@ public class GameOfLife {
     if (args.length > 1) {
       ruleIndex = java.util.Arrays.asList(FORMS).indexOf(args[1].toUpperCase());
       if (ruleIndex < 0) {
-        ruleIndex = 0;
+        System.out.println(args[1] + " is not a valid rule variation.");
+        return;
       }
     }
     Ruleset rule = makeRuleset(ruleIndex);
